@@ -52,8 +52,6 @@
 \end{minipage}\\[1 cm]
 \end{center}
 
-\noindent\instruction{This is a template for practical 1, all text in blue and the pseudocode example may be removed. The report may have at most 6 pages in the current format. The current sections and subsections must be present in the report, additional subsections may be added. Additionally, you may add examples, figures or pseudocode snippets (see Algorithm~\ref{pseudocode}).}
-
 
 \section{Explanation of the Algorithm}
 \subsection{Initialization}
@@ -65,7 +63,7 @@ At the end of initialization, the system has a list of all edges and a \texttt{S
 The goal of the algorithm is to find the minimum number of roads needed so that every stage is reachable either by bus or walking.
 \\
 \\
-The Algorithm that our algorithm is based on is Kruskal minimum spanning tree. Which uses a union find data structure (just like our algorithm) to determine wheter adding an edge connects two different groups or creates an cycle. The difference with our algorithm is instead of prioritizing the minimum total edge weight in a single network, we prioritize edges that can be used by both walking and the bus, because if such a road exists between 2 stages, this will always be the most optimal road, since it can be used for both pedestrians and busses.
+The Algorithm that our algorithm is based on is Kruskal minimum spanning tree. Which uses a union find data structure (just like our algorithm) to determine wheter adding an edge connects two different groups or creates an cycle. Both algorithms follow a greedy approach. The difference with our algorithm is instead of prioritizing the minimum total edge weight in a single network, we prioritize edges that can be used by both walking and the bus, because if such a road exists between 2 stages, this will always be the most optimal road, since it can be used for both pedestrians and busses.
 \\
 \\
 The approach is to use a Union-Find data structure to connect groups of vertices together.
@@ -121,17 +119,27 @@ We made some optimizations.\\1. in the intialization explained in 1.1, we splitt
 \\2. first we had 2 SetUnions from the start of function \texttt{find\_most\_closed\_roads} (1 for walking and 1 for bus). Then in the first iteration, we would union find on both these SetUnions. Now we've made the optimization to run the first union find (all edges marked BOTH) on 1 singular SetUnion. Then it will create a deepcopy of this set so that both walking and bus can run union find on their own edges.
 
 \section{Correctness Analysis}
-\instruction{Why is your algorithm correct? Provide precise arguments, supported by formal reasoning whenever needed. Think of an expanation to a critical colleague why your algorithm is correct. For examples, take a look at correctness proofs in the textbook (Algorithms Illuminated) or solutions to the weekly exercises.}
+Our algorithm follows a greedy approach just like Kruskal's algorithm. In Kruskal's edges are added in the order of the weight(lowest to highest), connecting groups without creating a cycle. Just as we said in the algorithm logic, in our algorithm we use the same principle but with a different prioritize rule, we prioritize both(bus and walking) edges since these improve reachability for both networks at the same time.
+\\
+\\
+The union datastructure that we use guarentees that each succesful union decreases the number of components while components can never split only merge.
+Therefore if the walking and union end with only one component, that means that each network is connected.
+And because edges are only added when they merge two seperate components, the result will give us the minimum number of used edges. 
+\\
+\\
+If every edge has been processed and in the union there is still more then one component, this means there is somewhere a gap in the network without any edges connecting it. 
+In that case there is no edge that could make a fully reachable network, so returning -1 is correct.
+
 
 
 \section{Complexity Analysis}
 The algorithm consists of three main parts: reading input, initializing the union-find data structures, and performing union-find operations for each edge type. 
 
-1. \textbf{Reading input:} Each of the $E$ edges is read once and categorized into one of three lists. This takes $O(E)$ time. 
+1. \textbf{Reading input:} Each of the E edges is read once and categorized into one of three lists. This takes $O(E)$ time. 
 
-2. \textbf{Initializing SetUnion:} A SetUnion object is created for $V$ vertices. The \texttt{parent} array is initialized with $V$ elements, which requires $O(V)$ time. A deep copie of SetUnion is made for the walking union, which also takes $O(V)$ time.
+2. \textbf{Initializing SetUnion:} A SetUnion object is created for V vertices. The parent array is initialized with $V$ elements, which requires $O(V)$ time. A deep copie of SetUnion is made for the walking union, which also takes $O(V)$ time.
 
-3. \textbf{Union-Find operations:} For each edge, a union operation is performed. Each \texttt{union} calls \texttt{find} twice. Each \texttt{find} can take $O(V)$ in the worst case. There are $E$ edges in total, so the worst-case complexity of union-find operations is $O(E \cdot V)$.  
+3. \textbf{Union-Find operations:} For each edge, a union operation is performed. Each union calls find twice. Each find can take $O(V)$ in the worst case. There are $E$ edges in total, so the worst-case complexity of union-find operations is $O(E \cdot V)$.  
 
 \textbf{Overall complexity:}  
 \[
