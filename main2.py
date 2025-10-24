@@ -1,6 +1,6 @@
 from enum import Enum
 from copy import deepcopy
-from typing import List, Tuple, Any
+from typing import List, Any
 
 
 class RoadType(Enum):
@@ -9,7 +9,14 @@ class RoadType(Enum):
     BOTH = 2
 
 
-def get_input() -> Tuple[int, List[Tuple[int, int, RoadType]]]:
+class Edge:
+    def __init__(self, vertex1: int, vertex2: int, road_type: RoadType):
+        self.vertex1 = vertex1
+        self.vertex2 = vertex2
+        self.road_type = road_type
+
+
+def get_input() -> (int, List[Edge]):
     values = input().split()
     if len(values) > 2:
         # apparently all input is on 1 line :(
@@ -18,7 +25,7 @@ def get_input() -> Tuple[int, List[Tuple[int, int, RoadType]]]:
         edge_values = values[2:]
 
         edges = [
-            (int(edge_values[i]), int(edge_values[i + 1]), RoadType(int(edge_values[i + 2])))
+            Edge(int(edge_values[i]), int(edge_values[i + 1]), RoadType(int(edge_values[i + 2])))
             for i in range(0, len(edge_values), 3)
         ]
 
@@ -26,7 +33,7 @@ def get_input() -> Tuple[int, List[Tuple[int, int, RoadType]]]:
     else:
         # all input is divided between lines just like the given example package! :)
         number_of_vertices, number_of_edges = map(int, values)
-        edges = [(a, b, RoadType(t)) for a, b, t in
+        edges = [Edge(a, b, RoadType(t)) for a, b, t in
                  (map(int, input().split()) for _ in range(number_of_edges))]
         return number_of_vertices, edges
 
@@ -67,7 +74,7 @@ class SetUnion:
         return new_set_union
 
 
-def find_most_closed_roads(vertices: int, edges: List[Tuple[int, int, RoadType]]) -> int:
+def find_most_closed_roads(vertices: int, edges: List[Edge]) -> int:
     both_union = SetUnion(vertices)
     used_roads = 0
     amount_of_roads = len(edges)
@@ -92,15 +99,16 @@ def find_most_closed_roads(vertices: int, edges: List[Tuple[int, int, RoadType]]
     return amount_of_roads - used_roads
 
 
-def union_find(union: SetUnion, edges: List[Tuple[int, int, RoadType]], road_type: RoadType) -> int:
+def union_find(union: SetUnion, edges: List[Edge], road_type: RoadType) -> int:
     used_roads = 0
-    for start,end,road, in edges :
-        if road == road_type:
-            used_road = union.union(start,end)
+    for edge in edges:
+        if edge.road_type == road_type:
+            used_road = union.union(edge.vertex1,edge.vertex2)
             if used_road:
                 used_roads +=1
 
     return used_roads
+
 
 def main():
     vertices,edges = get_input()

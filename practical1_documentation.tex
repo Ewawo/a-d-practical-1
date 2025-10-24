@@ -57,7 +57,9 @@
 
 \section{Explanation of the Algorithm}
 \subsection{Initialization}
-\instruction{How do you read in the data and initialize the required data structures?}
+The system reads input using Python's built-in \texttt{input()} function. The first two numbers are the number of vertices and edges. Each group of three numbers after that defines an edge: the two vertices it connects and its road type (0 = WALKING, 1 = BUS, 2 = BOTH). These edges are stored in a list as instances of the \texttt{Edge} class, each with fields \texttt{vertex1}, \texttt{vertex2}, and \texttt{road\_type}. 
+After parsing, a \texttt{SetUnion} object is created with the number of vertices. Its \texttt{parent} array is initialized to \([0, 1, \dots, \text{number\_of\_vertices}-1]\), representing that each vertex is initially its own group.
+At the end of initialization, the system has a list of all edges and a \texttt{SetUnion} instance.
 
 \subsection{Algorithm Logic}
 \instruction{Explain what your approach is, and what the algorithm does. Explain which data structures did you use and why. In case you adapt existing algorithms, explain how and why you modified and incorporated it.}
