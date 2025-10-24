@@ -16,7 +16,7 @@ class Edge:
         self.road_type = road_type
 
 
-def get_input() -> (int, List[Edge]):
+def get_input() -> (int, List[Edge], List[Edge], List[Edge]):
     values = input().split()
     if len(values) > 2:
         # apparently all input is on 1 line :(
@@ -24,18 +24,44 @@ def get_input() -> (int, List[Edge]):
 
         edge_values = values[2:]
 
-        edges = [
-            Edge(int(edge_values[i]), int(edge_values[i + 1]), RoadType(int(edge_values[i + 2])))
-            for i in range(0, len(edge_values), 3)
-        ]
+        walking_edges = []
+        bus_edges = []
+        both_edges = []
 
-        return number_of_vertices, edges
+        for i in range(0, len(edge_values), 3):
+            vertex1 = int(edge_values[i])
+            vertex2 = int(edge_values[i + 1])
+            road_type = RoadType(int(edge_values[i + 2]))
+            edge = Edge(vertex1, vertex2, road_type)
+
+            if road_type == RoadType.WALKING:
+                walking_edges.append(edge)
+            elif road_type == RoadType.BUS:
+                bus_edges.append(edge)
+            elif road_type == RoadType.BOTH:
+                both_edges.append(edge)
+
+        return number_of_vertices, walking_edges, bus_edges, both_edges
     else:
         # all input is divided between lines just like the given example package! :)
         number_of_vertices, number_of_edges = map(int, values)
-        edges = [Edge(a, b, RoadType(t)) for a, b, t in
-                 (map(int, input().split()) for _ in range(number_of_edges))]
-        return number_of_vertices, edges
+
+        walking_edges = []
+        bus_edges = []
+        both_edges = []
+
+        for _ in range(number_of_edges):
+            vertex1, vertex2, road_type = map(int, input().split())
+            edge = Edge(vertex1, vertex2, RoadType(road_type))
+
+            if edge.road_type == RoadType.WALKING:
+                walking_edges.append(edge)
+            elif edge.road_type == RoadType.BUS:
+                bus_edges.append(edge)
+            elif edge.road_type == RoadType.BOTH:
+                both_edges.append(edge)
+
+        return number_of_vertices, walking_edges, bus_edges, both_edges
 
 
 class SetUnion:
@@ -59,10 +85,12 @@ class SetUnion:
         parent_start = self.find(start)
         parent_end = self.find(end)
         if parent_start == parent_end:
-            #same parent, so in the same group return false.
+            #same parent, so in the same group (cycle) return false.
             return False
+
         self.parent[parent_end] = parent_start
         self.number_of_groups -= 1
+
         return True
 
 
@@ -74,23 +102,23 @@ class SetUnion:
         return new_set_union
 
 
-def find_most_closed_roads(vertices: int, edges: List[Edge]) -> int:
+def find_most_closed_roads(vertices: int, walking_edges: List[Edge], bus_edges: List[Edge], both_edges: List[Edge]) -> int:
     both_union = SetUnion(vertices)
     used_roads = 0
-    amount_of_roads = len(edges)
+    amount_of_roads = len(walking_edges) + len(bus_edges) + len(both_edges)
 
     #check for both
-    used_roads += union_find(both_union, edges, RoadType.BOTH)
+    used_roads += union_find(both_union, both_edges)
 
     #copy current union
     walking_union = deepcopy(both_union)
     bus_union = both_union
 
     #check walking
-    used_roads += union_find(walking_union, edges, RoadType.WALKING)
+    used_roads += union_find(walking_union, walking_edges)
 
     #check bus
-    used_roads += union_find(bus_union, edges, RoadType.BUS)
+    used_roads += union_find(bus_union, bus_edges)
 
     # if there are more than 1 group, apparently the graph is not connected. return -1
     if bus_union.number_of_groups != 1 or walking_union.number_of_groups != 1:
@@ -99,20 +127,19 @@ def find_most_closed_roads(vertices: int, edges: List[Edge]) -> int:
     return amount_of_roads - used_roads
 
 
-def union_find(union: SetUnion, edges: List[Edge], road_type: RoadType) -> int:
+def union_find(union: SetUnion, edges: List[Edge]) -> int:
     used_roads = 0
     for edge in edges:
-        if edge.road_type == road_type:
-            used_road = union.union(edge.vertex1,edge.vertex2)
-            if used_road:
-                used_roads +=1
+        used_road = union.union(edge.vertex1,edge.vertex2)
+        if used_road:
+            used_roads +=1
 
     return used_roads
 
 
 def main():
-    vertices,edges = get_input()
-    print(find_most_closed_roads(vertices,edges))
+    vertices,walking_edges,bus_edges,both_edges = get_input()
+    print(find_most_closed_roads(vertices,walking_edges,bus_edges,both_edges))
 
 
 if __name__ == '__main__':
