@@ -62,10 +62,10 @@ After parsing, a \texttt{SetUnion} object is created with the number of vertices
 At the end of initialization, the system has a list of all edges and a \texttt{SetUnion} instance.
 
 \subsection{Algorithm Logic}
-The output of the algorithm is to find the minimum number of roads needed so that every stage is reachable either by bus or walking.
+The goal of the algorithm is to find the minimum number of roads needed so that every stage is reachable either by bus or walking.
 \\
 \\
-The Algorithm that our algorithm is based on is Kruskal minimum spanning tree. Which uses a union find data structure(just like our algorithm) to determine wheter adding a edge connects two different groups or creates an cycle. The difference with our algorithm is instead of prioritizing the minimum total edge weight in a single network, we prioritize edges that can be used by both walking and the bus, because these improve reachability for both networks at the same time.
+The Algorithm that our algorithm is based on is Kruskal minimum spanning tree. Which uses a union find data structure (just like our algorithm) to determine wheter adding an edge connects two different groups or creates an cycle. The difference with our algorithm is instead of prioritizing the minimum total edge weight in a single network, we prioritize edges that can be used by both walking and the bus, because if such a road exists between 2 stages, this will always be the most optimal road, since it can be used for both pedestrians and busses.
 \\
 \\
 The approach is to use a Union-Find data structure to connect groups of vertices together.
@@ -73,10 +73,9 @@ Edges that do not connect new groups (which means it has no effect on reachabili
 This allows us to efficiently build up the graph while avoiding unnecessary edges.
 \\
 \\
-In other words in the beginning every vertex is its own group.
-When we add an edge, we check whether it connects two different groups.
-If the two vertices have different parents, the edge connects new components and is therefore useful. We connect them by making one vertex the parent of the other.
-If they already share the same parent, the edge forms a cycle and does not help to connect the graph.
+In other words in the beginning every vertex is its own group and thus is its own parent.
+When we add an edge, we check whether both vertices have the same parents. If so, this edge creates a cycle and does not improve reachability.
+If the two vertices have different parents, the edge connects two separate components and thus improves reachability. We connect them by making one vertex the parent of the other.
 \\
 \\
 The algorithm works on three stages:
@@ -99,14 +98,14 @@ We now do the exactly the same but for the bus union and the bus edges.
 After these three steps, we know how many roads are actually used.
 The output of the algorithm is total edges - used roads
 
-However there might be a case where one of the two groups (bus or walking) is not fully connected.
+However there might be a case where one of the two groups (bus or walking) are not fully connected.
 To check this we check whether both unions have exactly one connected component(group).
-If either network has more than one group, it means that there is a missing edge and the network is disconnected.
+If either network has more than one group, it means that the initial graph was not connected.
 In that case the algorithm returns -1.
 
 
 \subsection{Returning the Answer}
-The algorithm terminates when it has looped 3 times over the edge list and each time proceccesing different type of edge:
+The algorithm terminates when it has looped 3 times over (a part of) the edge list, each time proceccesing a different type of edge:
 \\
 \\
 1. processing all both edges on the shared union.
@@ -116,7 +115,7 @@ The algorithm terminates when it has looped 3 times over the edge list and each 
 3. processing all bus edges on the bus union.
 \\
 \\
-After this the algorithm is "done" it will print the total edges - used roads if the bus and walking union both contain of 1 group. Otherwise it will return -1. 
+After this the algorithm is "done", if the bus and walking union both contain only 1 group, it will print "total number of edges" - "number of used roads". Otherwise it will return -1.
 \subsection{Optimizations}
 We made some optimizations.\\1. in the intialization explained in 1.1, we splitted the list of all edges to 3 lists of all edges with the same road type. This way, in the algorithm we never loop over any edge more than once, so in total every edge is now handled 1 time. Before this was 3 times (both, walking, bus).
 \\2. first we had 2 SetUnions from the start of function \texttt{find\_most\_closed\_roads} (1 for walking and 1 for bus). Then in the first iteration, we would union find on both these SetUnions. Now we've made the optimization to run the first union find (all edges marked BOTH) on 1 singular SetUnion. Then it will create a deepcopy of this set so that both walking and bus can run union find on their own edges.
