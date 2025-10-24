@@ -94,7 +94,6 @@ We made some optimizations.\\1. in the intialization explained in 1.1, we splitt
 
 
 \section{Complexity Analysis}
-\instruction{What is the big O complexity of your algorithm (including reading in the data and making the data structure)? The analysis should be written in terms of the given input parameters. For example, if the input includes sets $V$ of vertices and $E$ of edges the complexity analysis should result in a big-Oh complexity using $V$ and $E$. Include an explanation of your answer.} 
 The algorithm consists of three main parts: reading input, initializing the union-find data structures, and performing union-find operations for each edge type. 
 
 1. \textbf{Reading input:} Each of the $E$ edges is read once and categorized into one of three lists. This takes $O(E)$ time. 
@@ -108,6 +107,5 @@ The algorithm consists of three main parts: reading input, initializing the unio
 O(E + V + V + E \cdot V) = O(E \cdot V)
 \]
 \section{Reflection}
-\instruction{Briefly reflect on the project. For example, you can write about how easy it was to find a suitable algorithm? Or if your algorithm is not always correct on DOMjudge, why do you think you get wrong answers? Or if there are of additional ways to speed up the algorithm?}
-
+We found a working solution relatively quickly. Early on, we realized that we needed to transform the given graph into a single tree. This could be done in two ways: either remove edges to eliminate all cycles and count the removed edges, or build up the graph while only adding edges that don’t create a cycle. After some online research, we recognized that the second approach closely resembles Kruskal’s algorithm. This insight allowed us to implement the solution quite easily.
 \end{document}
