@@ -86,7 +86,8 @@ At the end of initialization, the system has a list of all edges and a \texttt{S
 \instruction{When does the algorithm terminate and what is returned?}
 
 \subsection{Optimizations}
-\instruction{Did you use any special tricks to make the algorithm faster in special cases based on the problem statement?}
+We made some optimizations.\\1. in the intialization explained in 1.1, we splitted the list of all edges to 3 lists of all edges with the same road type. This way, in the algorithm we never loop over any edge more than once, so in total every edge is now handled 1 time. Before this was 3 times (both, walking, bus).
+\\2. first we had 2 SetUnions from the start of function \texttt{find\_most\_closed\_roads} (1 for walking and 1 for bus). Then in the first iteration, we would union find on both these SetUnions. Now we've made the optimization to run the first union find (all edges marked BOTH) on 1 singular SetUnion. Then it will create a deepcopy of this set so that both walking and bus can run union find on their own edges.
 
 \section{Correctness Analysis}
 \instruction{Why is your algorithm correct? Provide precise arguments, supported by formal reasoning whenever needed. Think of an expanation to a critical colleague why your algorithm is correct. For examples, take a look at correctness proofs in the textbook (Algorithms Illuminated) or solutions to the weekly exercises.}
@@ -94,8 +95,18 @@ At the end of initialization, the system has a list of all edges and a \texttt{S
 
 \section{Complexity Analysis}
 \instruction{What is the big O complexity of your algorithm (including reading in the data and making the data structure)? The analysis should be written in terms of the given input parameters. For example, if the input includes sets $V$ of vertices and $E$ of edges the complexity analysis should result in a big-Oh complexity using $V$ and $E$. Include an explanation of your answer.} 
+The algorithm consists of three main parts: reading input, initializing the union-find data structures, and performing union-find operations for each edge type. 
 
+1. \textbf{Reading input:} Each of the $E$ edges is read once and categorized into one of three lists. This takes $O(E)$ time. 
 
+2. \textbf{Initializing SetUnion:} A SetUnion object is created for $V$ vertices. The \texttt{parent} array is initialized with $V$ elements, which requires $O(V)$ time. A deep copie of SetUnion is made for the walking union, which also takes $O(V)$ time.
+
+3. \textbf{Union-Find operations:} For each edge, a union operation is performed. Each \texttt{union} calls \texttt{find} twice. Each \texttt{find} can take $O(V)$ in the worst case. There are $E$ edges in total, so the worst-case complexity of union-find operations is $O(E \cdot V)$.  
+
+\textbf{Overall complexity:}  
+\[
+O(E + V + V + E \cdot V) = O(E \cdot V)
+\]
 \section{Reflection}
 \instruction{Briefly reflect on the project. For example, you can write about how easy it was to find a suitable algorithm? Or if your algorithm is not always correct on DOMjudge, why do you think you get wrong answers? Or if there are of additional ways to speed up the algorithm?}
 
