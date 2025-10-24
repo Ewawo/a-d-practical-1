@@ -62,29 +62,61 @@ After parsing, a \texttt{SetUnion} object is created with the number of vertices
 At the end of initialization, the system has a list of all edges and a \texttt{SetUnion} instance.
 
 \subsection{Algorithm Logic}
-\instruction{Explain what your approach is, and what the algorithm does. Explain which data structures did you use and why. In case you adapt existing algorithms, explain how and why you modified and incorporated it.}
+The output of the algorithm is to find the minimum number of roads needed so that every stage is reachable either by bus or walking.
+\\
+\\
+The Algorithm that our algorithm is based on is Kruskal minimum spanning tree. Which uses a union find data structure(just like our algorithm) to determine wheter adding a edge connects two different groups or creates an cycle. The difference with our algorithm is instead of prioritizing the minimum total edge weight in a single network, we prioritize edges that can be used by both walking and the bus, because these improve reachability for both networks at the same time.
+\\
+\\
+The approach is to use a Union-Find data structure to connect groups of vertices together.
+Edges that do not connect new groups (which means it has no effect on reachability) are ignored.
+This allows us to efficiently build up the graph while avoiding unnecessary edges.
+\\
+\\
+In other words in the beginning every vertex is its own group.
+When we add an edge, we check whether it connects two different groups.
+If the two vertices have different parents, the edge connects new components and is therefore useful. We connect them by making one vertex the parent of the other.
+If they already share the same parent, the edge forms a cycle and does not help to connect the graph.
+\\
+\\
+The algorithm works on three stages:
+\\
+\\
+Both roads:
+First we process the edges that can be used by both walking and bus.
+These are always beneficial because they improve reachability for both networks while using only one road.
+We add them to a shared union structure that will later be used for both the walking and bus networks.
+Each time an edge is used, we increase a counter called used roads.
+We then copy the current union to create two separate ones, one for walking and one for bus.
+This is needed because both have diferent roads from this point forward.
+\\
+\\
+Single roads:
+Now we can choose between doing the walking graph first or the bus graph, in our algorithm we chose walking first.
+If a walking edge connects new components in the walking union, we increase the counter.
+We now do the exactly the same but for the bus union and the bus edges.
 
-\begin{algorithm}[h!]
-    \caption{Pseudocode example.}
-    \label{pseudocode}
-    \begin{algorithmic}[1]
-    \Function{Function}{arguments}
-    \State Step 1
-    \While{Condition 1 does not hold} F
-    \If{Condition 2}
-    \State \Return Yes
-    \Else 
-    \State Step 2
-    \EndIf
-    \EndWhile 
-    \State \Return No
-    \EndFunction
-    \end{algorithmic}
-    \end{algorithm}
+After these three steps, we know how many roads are actually used.
+The output of the algorithm is total edges - used roads
+
+However there might be a case where one of the two groups (bus or walking) is not fully connected.
+To check this we check whether both unions have exactly one connected component(group).
+If either network has more than one group, it means that there is a missing edge and the network is disconnected.
+In that case the algorithm returns -1.
+
 
 \subsection{Returning the Answer}
-\instruction{When does the algorithm terminate and what is returned?}
-
+The algorithm terminates when it has looped 3 times over the edge list and each time proceccesing different type of edge:
+\\
+\\
+1. processing all both edges on the shared union.
+\\
+2. processing all walking edges on the walking union.
+\\
+3. processing all bus edges on the bus union.
+\\
+\\
+After this the algorithm is "done" it will print the total edges - used roads if the bus and walking union both contain of 1 group. Otherwise it will return -1. 
 \subsection{Optimizations}
 \instruction{Did you use any special tricks to make the algorithm faster in special cases based on the problem statement?}
 
