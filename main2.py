@@ -3,17 +3,32 @@ from copy import deepcopy
 from typing import List, Tuple, Any
 
 
-class EdgeType(Enum):
+class RoadType(Enum):
     WALKING = 0
     BUS = 1
     BOTH = 2
 
 
-def get_input() -> Tuple[int, List[Tuple[int, int, EdgeType]]]:
-    number_of_vertices, number_of_edges = map(int, input().split())
-    edges = [(a, b, EdgeType(t)) for a, b, t in
-             (map(int, input().split()) for _ in range(number_of_edges))]
-    return number_of_vertices, edges
+def get_input() -> Tuple[int, List[Tuple[int, int, RoadType]]]:
+    values = input().split()
+    if len(values) > 2:
+        # apparently all input is on 1 line :(
+        number_of_vertices, number_of_edges = map(int, values[:2])
+
+        edge_values = values[2:]
+
+        edges = [
+            (int(edge_values[i]), int(edge_values[i + 1]), RoadType(int(edge_values[i + 2])))
+            for i in range(0, len(edge_values), 3)
+        ]
+
+        return number_of_vertices, edges
+    else:
+        # all input is divided between lines just like the given example package! :)
+        number_of_vertices, number_of_edges = map(int, values)
+        edges = [(a, b, RoadType(t)) for a, b, t in
+                 (map(int, input().split()) for _ in range(number_of_edges))]
+        return number_of_vertices, edges
 
 
 class SetUnion:
@@ -26,7 +41,7 @@ class SetUnion:
 
     def find(self, vertex: int) -> int:
         root = vertex
-        # Step 1: find the root
+        # needed to go for while loop instead of recursive, because python cannot handle high recursion depth.
         while root != self.parent[root]:
             root = self.parent[root]
 
@@ -44,52 +59,52 @@ class SetUnion:
         return True
 
 
+    # quick deepcopy for the inner parent array
     def __deepcopy__(self, memo: dict[int, Any]) -> "SetUnion":
-        # Create a new instance without calling __init__
-        new_set_union = self.__class__.__new__(self.__class__)
-        # Deep copy all attributes manually
+        new_set_union = SetUnion.__new__(SetUnion)
         new_set_union.parent = deepcopy(self.parent, memo)
         new_set_union.number_of_groups = self.number_of_groups
         return new_set_union
 
 
-def find_most_closed_roads(vertices: int, edges: List[Tuple[int, int, EdgeType]]) -> int:
+def find_most_closed_roads(vertices: int, edges: List[Tuple[int, int, RoadType]]) -> int:
     both_union = SetUnion(vertices)
     used_roads = 0
     amount_of_roads = len(edges)
-    #Check for both
-    for start,end,road in edges:
-        if road == EdgeType.BOTH:
-            used_both = both_union.union(start,end)
-            if used_both:
-                used_roads +=1
+
+    #check for both
+    used_roads += union_find(both_union, edges, RoadType.BOTH)
 
     #copy current union
     walking_union = deepcopy(both_union)
     bus_union = both_union
 
-    #Check walking
-    for start,end,road, in edges:
-        if road == EdgeType.WALKING:
-            used_walking = walking_union.union(start,end)
-            if used_walking:
-                used_roads +=1
-    #Check bus
-    for start,end,road, in edges :
-        if road == EdgeType.BUS:
-            used_bus = bus_union.union(start,end)
-            if used_bus:
-                used_roads +=1
-    
+    #check walking
+    used_roads += union_find(walking_union, edges, RoadType.WALKING)
+
+    #check bus
+    used_roads += union_find(bus_union, edges, RoadType.BUS)
+
+    # if there are more than 1 group, apparently the graph is not connected. return -1
     if bus_union.number_of_groups != 1 or walking_union.number_of_groups != 1:
         return -1
 
     return amount_of_roads - used_roads
 
 
+def union_find(union: SetUnion, edges: List[Tuple[int, int, RoadType]], road_type: RoadType) -> int:
+    used_roads = 0
+    for start,end,road, in edges :
+        if road == road_type:
+            used_road = union.union(start,end)
+            if used_road:
+                used_roads +=1
+
+    return used_roads
+
 def main():
-    V,E = get_input()
-    print(find_most_closed_roads(V,E))
+    vertices,edges = get_input()
+    print(find_most_closed_roads(vertices,edges))
 
 
 if __name__ == '__main__':
